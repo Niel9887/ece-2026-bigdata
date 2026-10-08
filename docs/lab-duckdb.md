@@ -6,11 +6,11 @@ The queries are in `sql/`, one file per part of the lab. I run them in the DuckD
 
 ### The persistent secret is stored in a file of your home directory. What are the risks, and why are they limited on Onyxia?
 
-The file `~/.duckdb/stored_secrets` stores the access key, the secret key and the session token unencrypted. Anyone who can read this file, or a copy of my home directory, gets read and write access to my whole bucket. On Onyxia the credentials are temporary: a stolen key expires on its own and stops working, and a restart of the service gives me new ones.
+The file `~/.duckdb/stored_secrets` stores the access key, the secret key and the session token unencrypted. Anyone who can read this file, or a copy of my home directory, gets read and write access to my whole bucket. On Onyxia the credentials are temporary: a stolen key stops working when it expires, and a restart of the service gives me new ones.
 
 ### The secret is visible to any process running as your user. How would you restrict the access to S3 for a Kubernetes Job?
 
-I would give the Job its own credentials instead of mine. They are stored in a Kubernetes Secret and injected only into its pod with `envFrom` and `secretRef`, the same way as the `upload-bronze` Job of the S3 lab, which reused my credentials. A policy limits them to what the Job needs, for example `s3:PutObject` on `bronze/` only.
+I would give the Job its own S3 credentials instead of mine, limited by a policy to what it needs, for example `s3:PutObject` on `bronze/` only. They are stored in a Kubernetes Secret and injected only into the pod of the Job with `envFrom` and `secretRef`, like in the `upload-bronze` Job of the S3 lab.
 
 ## Query the bronze layer
 
@@ -23,8 +23,6 @@ I would give the Job its own credentials instead of mine. They are stored in a K
 DuckDB picks the type of a column from the sample. If a column only has integers in the first rows, it becomes `BIGINT`, and the read fails later on the first text or decimal value.
 
 ## Exercises
-
-The queries are in `sql/04_exercises.sql`.
 
 ### 1. Average number of orders per user and average quantity per order
 
@@ -132,11 +130,9 @@ HAVING count(DISTINCT o.product) = (SELECT count(DISTINCT product) FROM orders)
 ORDER BY u.username;
 ```
 
-45 users out of 50 ordered all 6 products. The other 5 users have very few orders: millertodd (2 orders), kayla51 (4), clarence34 (6), heatherberger (8) and perezrebecca (12).
+45 users out of 50 ordered all 6 products. The last query of `sql/04_exercises.sql` lists the other 5 users, who have very few orders: millertodd (2 orders), kayla51 (4), clarence34 (6), heatherberger (8) and perezrebecca (12).
 
 ## Parquet export
-
-The queries are in `sql/05_parquet.sql`.
 
 ### Why is the `uuid` column barely compressed?
 
@@ -154,11 +150,11 @@ Every order would get its own directory, which gives 2829 Parquet files of one r
 
 ### Which partition column would you choose for a dataset of orders growing every day?
 
-I would partition by a time column: by day (a `day` column computed as `date::DATE`) when the daily volume is large, or by month for this dataset, where a day only holds 24 orders and daily files would bring back the small files problem. New orders go into a new partition without rewriting the old files, and a query on a period only reads the partitions of that period.
+I would partition by day, with a `day` column computed as `date::DATE`. New orders go into a new partition without rewriting the old files, and a query on a period only reads the partitions of that period. For this dataset, where a day only holds 24 orders, I would use the month instead, because daily files would bring back the small files problem.
 
 ## CSV vs. Parquet at scale
 
-The queries are in `sql/06_large.sql` and the measurements in `scripts/measure_csv_parquet.sh`. With `-u 5000` I get 252416 orders, a CSV of 28.2 MiB and a Parquet file of 11.0 MiB.
+The measurements are in `scripts/measure_csv_parquet.sh`. With `-u 5000` I get 252416 orders, a CSV of 28.2 MiB and a Parquet file of 11.0 MiB.
 
 | Query | Data received | #GET | Time (s) |
 |---|---|---|---|
@@ -177,4 +173,4 @@ Most filters could not skip any row group anymore. Each row group would contain 
 
 ### Compare the execution time of the CSV and Parquet queries. Which part of the difference is due to the network, which part to the parsing of the CSV file?
 
-Most of the 0.96 s gap between CSV and Parquet comes from the network. The CSV query takes 1.30 s on S3 but only 0.23 s on the local file, so about 1.07 s is the download of the 28.2 MiB file and about 0.23 s is parsing the text. The Parquet query takes 0.34 s and the filtered Parquet query already takes 0.27 s for 16 KiB, so the Parquet time is mostly a fixed cost for its requests.
+About 0.8 s of the 0.96 s gap (1.30 s against 0.34 s) comes from the network and about 0.16 s from parsing the CSV. Reading the CSV from S3 instead of the local file adds 1.07 s (1.30 s against 0.23 s), but Parquet also spends about 0.27 s just to open the file, as the filtered query with 1 GET shows, so the network part of the gap is about 1.07 - 0.27 = 0.8 s. The other 0.07 s of the Parquet query, against 0.23 s for the local CSV, gives about 0.16 s for parsing, a slight underestimate because these 0.07 s still include 3 GET requests.

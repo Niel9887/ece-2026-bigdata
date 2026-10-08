@@ -1,4 +1,4 @@
-CREATE OR REPLACE TABLE users AS  -- copy of the csv in the duckdb file
+CREATE OR REPLACE TABLE users AS
 FROM read_csv(getvariable('bucket') || '/bronze/users.csv');
 CREATE OR REPLACE TABLE orders AS
 FROM read_csv(getvariable('bucket') || '/bronze/orders.csv');

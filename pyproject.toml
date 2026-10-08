@@ -1,7 +1,7 @@
 [project]
 name = "ece-2026-bigdata"
 version = "0.1.0"
-description = "Add your description here"
+description = "Random users and orders datasets, analyzed with DuckDB"
 readme = "README.md"
 authors = [
     { name = "n-raluy-ece", email = "niel.raluy@edu.ece.fr" }

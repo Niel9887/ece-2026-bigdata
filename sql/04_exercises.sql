@@ -47,3 +47,10 @@ JOIN users u ON o.user_uuid = u.uuid
 GROUP BY u.uuid, u.username
 HAVING count(DISTINCT o.product) = (SELECT count(DISTINCT product) FROM orders)  -- all 6 products
 ORDER BY u.username;
+
+SELECT u.username, count(*) AS orders  -- the 5 users who miss a product
+FROM orders o
+JOIN users u ON o.user_uuid = u.uuid
+GROUP BY u.uuid, u.username
+HAVING count(DISTINCT o.product) < (SELECT count(DISTINCT product) FROM orders)
+ORDER BY orders;

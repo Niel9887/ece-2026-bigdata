@@ -37,7 +37,7 @@ WITH daily AS (  -- quantity per day first
 SELECT
   day,
   quantity,
-  sum(quantity) OVER (ORDER BY day) AS cumulative,  -- running total
+  sum(quantity) OVER (ORDER BY day) AS cumulative,
   round(avg(quantity) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 1) AS avg_7d  -- 7-day moving average
 FROM daily
 ORDER BY day
