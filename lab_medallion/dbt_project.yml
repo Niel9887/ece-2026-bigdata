@@ -26,3 +26,6 @@ models:
 seeds:
   lab_medallion:
     +schema: reference
+    zip_prefixes:
+      +column_types:
+        zip3: varchar
