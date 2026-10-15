@@ -7,5 +7,9 @@ Run commands from this directory. Set `LAB_BUCKET_NAME` to the Onyxia bucket nam
 ```bash
 uv run dbt debug
 uv run dbt build
+uv run duckdb lab_medallion.duckdb -c "COPY (SELECT * FROM main_silver.stg_users) TO 's3://$LAB_BUCKET_NAME/silver/dbt/users.parquet' (FORMAT parquet, OVERWRITE_OR_IGNORE true);"
+uv run duckdb lab_medallion.duckdb -c "COPY (SELECT * FROM main_silver.stg_orders) TO 's3://$LAB_BUCKET_NAME/silver/dbt/orders.parquet' (FORMAT parquet, OVERWRITE_OR_IGNORE true);"
 uv run dbt docs generate --static
 ```
+
+The ZIP prefix test warns on the generated addresses with inconsistent state and ZIP pairs.

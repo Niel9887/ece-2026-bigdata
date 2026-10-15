@@ -28,54 +28,30 @@ For an age dashboard, I set a birthdate later than the first order to `NULL` and
 
 ### 2. How could we detect wrong state and ZIP combinations?
 
-A singular test could join each `(state, zip_code)` pair to a reference table of valid combinations and return unmatched users. The `states.csv` seed only checks state codes, so this test would need a separate state and ZIP mapping.
+`assert_state_zip_prefix` joins each user's state and the first three ZIP digits to `zip_prefixes.csv`. Unmatched pairs produce a warning. The separate `states.csv` seed checks only state codes.
 
-## Gold layer
+## Silver Parquet export
 
-### 1. Why cast `quantity` to an integer?
-
-Without the cast, `sum(quantity)` produced a `DOUBLE` column in the Parquet file during my local test. With the cast, the Parquet column is `INT32`, which matches an integer count of items.
-
-### 2. Can `customers` be summed across months or products?
-
-No. The same customer can appear in several months and buy several products, so summing those distinct counts would count that customer more than once.
-
-### 3. What happens when the Parquet file is overwritten?
-
-A dashboard reading during an overwrite has no consistent snapshot of the whole dataset and may fail if the file is temporarily unavailable. Apache Iceberg provides snapshots, so readers can keep using a complete version while a new one is committed.
-
-## Pipeline
-
-### 1. How do we rebuild `stg_orders` and its downstream models with tests?
-
-Run `uv run dbt build --select stg_orders+` from `lab_medallion`. The `+` selects models downstream of `stg_orders`.
-
-### 2. What happens if a column in `users.csv` is renamed?
-
-`stg_users` still refers to the old column, so its SQL fails when dbt builds that model. The gold models depending on it are skipped until the silver model is updated.
-
-I also removed the three military codes from the seed temporarily. The state test failed and dbt skipped 16 dependent steps. After restoring the codes, all 38 steps passed.
-
-On Onyxia, `dbt build` passed all 38 steps in 6.98 seconds. It wrote `silver/users.parquet`, `silver/orders.parquet` and `gold/sales_by_region_month.parquet` to my S3 bucket. `dbt docs generate --static` also completed.
+I exported the two Silver views to `silver/dbt/users.parquet` and `silver/dbt/orders.parquet` in S3. I queried both files with DuckDB: they contain 50 users and 2,829 orders, the same counts as the views.
 
 ## Exercises
 
-### 1. User dimension
+### 1. Add a cleaned column
 
-`dim_users` keeps one row per user and adds the state name, region, first and last order dates, order count and total quantity. Its `user_id` is unique and not null. The row count test found 50 users in both `stg_users` and `dim_users` on Onyxia.
+`stg_users` creates `username_normalized` with `lower(trim(username))`. The column is documented and has `unique` and `not_null` tests.
 
-### 2. Business model
+### 2. Improve order validation
 
-`best_product_by_region` groups orders by region and product, sums their quantities, then ranks products within each region. It returns the product with the largest quantity for each region. The model has tests for its region, product and quantity columns.
+`stg_orders` checks the allowed products and quantities in `silver.yml`. The singular `assert_orders_quantity_positive` test rejects zero or negative quantities, and `assert_orders_have_users` checks the user reference.
 
-### 3. Birthdate correction
+### 3. Clean invalid birthdates
 
 `stg_users` replaces a birthdate later than the user's first order with `NULL` and records the check in `birthdate_is_valid`. Five users on Onyxia have an invalid birthdate. `assert_orders_after_user_birth` passes.
 
-### 4. Quantity reconciliation
+### 4. Detect invalid ZIP codes
 
-`assert_gold_quantity_matches_orders` compares the sum of `quantity` in `stg_orders` and `sales_by_region_month`. Both were 8,615 on Onyxia, from 2,829 orders.
+I built `zip_prefixes.csv` from the [2020 Census ZCTA-to-county file](https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt) and its [state codes](https://www2.census.gov/geo/docs/reference/codes2020/national_state2020.txt). It contains 997 three-digit ZIP prefix and state pairs. The Silver test `assert_state_zip_prefix` warns on 43 users whose pair is absent; generated addresses are random, so the warning does not stop the pipeline. Military ZIPs are excluded because the Census file does not cover them. The seed would need updating when the reference changes. A matching prefix does not prove that the full five-digit ZIP is valid.
 
-### 5. Silver Parquet materialization
+### 5. Materialization experiment
 
-Both silver models now use dbt's `external` materialization and write Parquet files under `silver/`. On the local dataset, a full `dbt build` took 3.82 seconds with views and 3.72 seconds with external Parquet. This small difference does not establish a speed gain on S3.
+I ran `dbt build --select silver` with views, then with tables: 7.19 seconds versus 3.74 seconds on Onyxia. Views run their SQL when queried and read the CSV again. Tables store the result in DuckDB and read the CSV when rebuilt, so they use more storage. A CSV change appears in a view on the next query but reaches a table only after rebuilding it. Tables avoid reading the source files for every query. I restored the views afterward. The final `dbt build` passed 23 steps with one ZIP warning and no errors. `dbt docs generate --static` also completed.
