@@ -27,6 +27,10 @@ models:
       - name: state
         data_tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('states')
+                field: code
 
   - name: stg_orders
     description: One row per order after typing and deduplication.

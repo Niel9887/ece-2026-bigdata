@@ -19,3 +19,10 @@ models:
     silver:
       +materialized: view
       +schema: silver
+    gold:
+      +materialized: table
+      +schema: gold
+
+seeds:
+  lab_medallion:
+    +schema: reference
