@@ -1,16 +1,11 @@
 # dbt medallion lab
 
-This dbt project reads the bronze CSV files from S3 and builds silver models with DuckDB.
+This dbt project reads bronze CSV files from S3 and writes the silver and monthly gold models as Parquet files.
 
 Run commands from this directory. Set `LAB_BUCKET_NAME` to the Onyxia bucket name first.
 
 ```bash
 uv run dbt debug
-uv run dbt build --select silver
-```
-
-From the repository root, export the two silver models to S3 with:
-
-```bash
-uv run python scripts/export_silver.py
+uv run dbt build
+uv run dbt docs generate --static
 ```

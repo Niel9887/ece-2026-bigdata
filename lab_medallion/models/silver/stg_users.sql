@@ -1,3 +1,10 @@
+{{
+    config(
+        materialized='external',
+        location=env_var('LAB_SILVER_ROOT', 's3://' ~ env_var('LAB_BUCKET_NAME') ~ '/silver') ~ '/users.parquet'
+    )
+}}
+
 with source as (
     select * from {{ source('bronze', 'users') }}
 ),
