@@ -6,6 +6,15 @@ models:
         data_tests:
           - unique
           - not_null
+      - name: username_normalized
+        description: Username with surrounding spaces removed and lowercase letters.
+        data_tests:
+          - unique
+          - not_null
+      - name: birthdate_is_valid
+        description: Whether the original birthdate is no later than the first order.
+        data_tests:
+          - not_null
       - name: email
         data_tests:
           - unique
