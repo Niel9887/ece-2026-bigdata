@@ -18,3 +18,4 @@ uv run orders-report -h
 
 - S3 lab: answers in [docs/lab-s3.md](docs/lab-s3.md), Kubernetes Job in `k8s/`
 - DuckDB lab: answers in [docs/lab-duckdb.md](docs/lab-duckdb.md), queries in `sql/`
+- dbt lab: answers in [docs/lab-dbt.md](docs/lab-dbt.md), project in `lab_medallion/`
