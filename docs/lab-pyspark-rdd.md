@@ -48,7 +48,7 @@ It sends each quantity to the partition for its user. `reduceByKey(add)` sends p
 
 ### 2. When would `groupByKey()` be needed?
 
-An exact median needs each user's individual quantities, so `reduceByKey(add)` cannot calculate it. `groupByKey()` keeps the quantities together, but it is not strictly unavoidable: a different reducer could also keep them.
+An exact median needs each user's individual quantities, so `reduceByKey(add)` cannot calculate it. `groupByKey()` gathers them, but a reducer that keeps the values would also work.
 
 ## Manual deduplication
 
@@ -90,4 +90,4 @@ In my script, the RDD aggregation spans three lines and the DataFrame aggregatio
 
 ### 4. Count with and without cache
 
-On one Onyxia run, `orders_rdd.count()` took 0.146 s with cache and 0.295 s after `unpersist()`. `user_quantity.count()` took 0.202 s and 0.199 s, so this single run does not show a clear speedup for the aggregation. The Storage tab showed one cached RDD before `unpersist()` and none afterward.
+On one Onyxia run with the locally generated CSV files, `orders_rdd.count()` took 0.132 s with cache and 0.195 s on a new RDD without `.cache()`. The quantity totals took 0.190 s and 0.322 s. In a separate check, the Storage tab showed one cached RDD before `unpersist()` and none afterward.

@@ -1,7 +1,7 @@
-# Dataset generator
+# Big Data labs
 
-This project generates a random dataset consisting of users and orders. Scripts are written in Python and the project
-uses [uv](https://docs.astral.sh/uv/).
+This project generates a random dataset of users and orders and contains the course labs. Scripts are written in Python
+and the project uses [uv](https://docs.astral.sh/uv/).
 
 ## Usage
 
@@ -19,3 +19,4 @@ uv run orders-report -h
 - S3 lab: answers in [docs/lab-s3.md](docs/lab-s3.md), Kubernetes Job in `k8s/`
 - DuckDB lab: answers in [docs/lab-duckdb.md](docs/lab-duckdb.md), queries in `sql/`
 - dbt lab: answers in [docs/lab-dbt.md](docs/lab-dbt.md), project in `lab_medallion/`
+- PySpark RDD lab: answers in [docs/lab-pyspark-rdd.md](docs/lab-pyspark-rdd.md), script in `spark_rdd/`
