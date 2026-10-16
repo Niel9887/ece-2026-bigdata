@@ -141,7 +141,11 @@ def timed_count(label, rdd):
 timed_count("Parsed orders cached", orders_rdd)
 timed_count("Totals with cache", user_quantity)
 orders_rdd.unpersist(blocking=True)
-timed_count("Parsed orders uncached", orders_rdd)
-timed_count("Totals without cache", user_quantity)
+orders_uncached = orders_data.map(parse_order)
+user_quantity_uncached = orders_uncached.map(
+    lambda order: (order["user_id"], order["quantity"])
+).reduceByKey(add)
+timed_count("Parsed orders uncached", orders_uncached)
+timed_count("Totals without cache", user_quantity_uncached)
 
 spark.stop()
