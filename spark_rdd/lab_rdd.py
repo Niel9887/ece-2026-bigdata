@@ -1,5 +1,6 @@
 import re
 from operator import add
+from time import perf_counter
 
 from pyspark.sql import SparkSession
 
@@ -97,5 +98,49 @@ print("Joined sample:", enriched.take(3))
 
 enriched_left = orders_kv.leftOuterJoin(users_kv)
 print("Left join orders:", enriched_left.count())
+
+order_stats = orders_rdd.map(
+    lambda order: (order["user_id"], order["quantity"])
+).aggregateByKey(
+    (0, 0),
+    lambda stats, quantity: (stats[0] + 1, stats[1] + quantity),
+    lambda left, right: (left[0] + right[0], left[1] + right[1]),
+)
+average_quantity = order_stats.mapValues(lambda stats: stats[1] / stats[0])
+print("Order stats sample:", order_stats.take(3))
+print("Average quantity sample:", average_quantity.take(3))
+
+fake_order = dict(orders_rdd.first())
+fake_order["user_id"] = "missing-user"
+orders_with_missing = orders_rdd.union(sc.parallelize([fake_order]))
+orders_with_missing_kv = orders_with_missing.map(
+    lambda order: (order["user_id"], order)
+)
+missing_user_orders = orders_with_missing_kv.leftOuterJoin(users_kv).filter(
+    lambda pair: pair[1][1] is None
+)
+print("Orders with missing user:", missing_user_orders.count())
+
+orders_df = spark.createDataFrame(orders_rdd)
+df_totals = orders_df.groupBy("user_id").sum("quantity")
+df_totals_map = {row["user_id"]: row["sum(quantity)"] for row in df_totals.collect()}
+print("DataFrame totals match:", df_totals_map == reduce_totals)
+print("DataFrame plan:")
+df_totals.explain()
+print("RDD lineage:")
+print(user_quantity.toDebugString().decode())
+
+
+def timed_count(label, rdd):
+    start = perf_counter()
+    count = rdd.count()
+    print(f"{label}: {count} rows in {perf_counter() - start:.3f} s")
+
+
+timed_count("Parsed orders cached", orders_rdd)
+timed_count("Totals with cache", user_quantity)
+orders_rdd.unpersist(blocking=True)
+timed_count("Parsed orders uncached", orders_rdd)
+timed_count("Totals without cache", user_quantity)
 
 spark.stop()

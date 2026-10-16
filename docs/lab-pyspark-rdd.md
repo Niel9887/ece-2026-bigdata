@@ -73,3 +73,21 @@ It keeps every order. If a user is missing, the username in `(order, username)` 
 ### 3. What is the risk of calling `.collect()` here?
 
 It sends every joined record to the driver. On a large dataset, the driver could run out of memory.
+
+## Exercises
+
+### 1. Average order quantity per user
+
+`aggregateByKey` calculates `(order_count, total_quantity)` together for each user. The average is `total_quantity / order_count`.
+
+### 2. Order with no matching user
+
+I added one order with `user_id` set to `missing-user`. The `leftOuterJoin()` kept it, and filtering rows whose username is `None` returned one order.
+
+### 3. RDD and DataFrame aggregation
+
+In my script, the RDD aggregation spans three lines and the DataFrame aggregation uses one line. The DataFrame states the grouping and sum directly; its `explain()` shows an `Exchange` and aggregation, while `toDebugString()` shows the RDD lineage. Both gave the same totals.
+
+### 4. Count with and without cache
+
+On one Onyxia run, `orders_rdd.count()` took 0.146 s with cache and 0.295 s after `unpersist()`. `user_quantity.count()` took 0.202 s and 0.199 s, so this single run does not show a clear speedup for the aggregation. The Storage tab showed one cached RDD before `unpersist()` and none afterward.
