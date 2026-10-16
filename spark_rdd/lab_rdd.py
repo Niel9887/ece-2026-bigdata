@@ -69,4 +69,17 @@ grouped_totals = user_quantity_grouped.collectAsMap()
 print("Users with orders:", len(reduce_totals))
 print("Same quantity per user:", reduce_totals == grouped_totals)
 
+
+def most_recent(order_a, order_b):
+    return order_a if order_a["date"] > order_b["date"] else order_b
+
+
+orders_dedup = (
+    orders_rdd.map(lambda order: (order["order_id"], order))
+    .reduceByKey(most_recent)
+    .values()
+)
+print("Orders before dedup:", orders_rdd.count())
+print("Orders after dedup:", orders_dedup.count())
+
 spark.stop()

@@ -49,3 +49,13 @@ It sends each quantity to the partition for its user. `reduceByKey(add)` sends p
 ### 2. When would `groupByKey()` be needed?
 
 An exact median needs each user's individual quantities, so `reduceByKey(add)` cannot calculate it. `groupByKey()` keeps the quantities together, but it is not strictly unavoidable: a different reducer could also keep them.
+
+## Manual deduplication
+
+### 1. What plays the role of the window partition?
+
+`reduceByKey(most_recent)` groups orders with the same `order_id` and shuffles them by key before keeping one order.
+
+### 2. Which version states the intent more directly?
+
+The DataFrame window is clearer to me: it shows the grouping key and descending date together. With the RDD, I have to read `most_recent` to see which order wins.
