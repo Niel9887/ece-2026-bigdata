@@ -82,4 +82,20 @@ orders_dedup = (
 print("Orders before dedup:", orders_rdd.count())
 print("Orders after dedup:", orders_dedup.count())
 
+
+def parse_user_for_join(line):
+    fields = line.split(",")
+    return fields[0], fields[1]
+
+
+users_kv = users_records.map(parse_user_for_join)
+orders_kv = orders_rdd.map(lambda order: (order["user_id"], order))
+
+enriched = orders_kv.join(users_kv)
+print("Joined orders:", enriched.count())
+print("Joined sample:", enriched.take(3))
+
+enriched_left = orders_kv.leftOuterJoin(users_kv)
+print("Left join orders:", enriched_left.count())
+
 spark.stop()

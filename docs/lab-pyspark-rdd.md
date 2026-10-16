@@ -59,3 +59,17 @@ An exact median needs each user's individual quantities, so `reduceByKey(add)` c
 ### 2. Which version states the intent more directly?
 
 The DataFrame window is clearer to me: it shows the grouping key and descending date together. With the RDD, I have to read `most_recent` to see which order wins.
+
+## Joining orders with users
+
+### 1. When can Spark skip the join shuffle?
+
+Both RDDs must already be partitioned the same way by `user_id`, with the same partitioner and number of partitions. Then matching keys are already together.
+
+### 2. What changes with `leftOuterJoin()`?
+
+It keeps every order. If a user is missing, the username in `(order, username)` is `None` instead of dropping that order.
+
+### 3. What is the risk of calling `.collect()` here?
+
+It sends every joined record to the driver. On a large dataset, the driver could run out of memory.
