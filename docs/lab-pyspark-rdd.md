@@ -14,7 +14,7 @@
 
 ### 1. Does a second `count()` run a new stage?
 
-Yes. `orders_data` is not cached, so each `count()` runs the filter and reads the CSV again. Both counts returned 2,829 on the locally generated dataset.
+Yes. `orders_data` is not cached, so each `count()` runs the filter and reads the CSV again. Both counts returned 2,829 with `bronze/orders.csv` from S3.
 
 ### 2. Where would `.cache()` change this?
 
@@ -90,4 +90,4 @@ In my script, the RDD aggregation spans three lines and the DataFrame aggregatio
 
 ### 4. Count with and without cache
 
-On one Onyxia run with the locally generated CSV files, `orders_rdd.count()` took 0.132 s with cache and 0.195 s on a new RDD without `.cache()`. The quantity totals took 0.190 s and 0.322 s. In a separate check, the Storage tab showed one cached RDD before `unpersist()` and none afterward.
+On one Onyxia run with the bronze CSV files from S3, `orders_rdd.count()` took 0.107 s with cache and 0.157 s on a new RDD without `.cache()`. The quantity totals took 0.201 s and 0.435 s. In a separate check, the Storage tab showed one cached RDD before `unpersist()` and none afterward.
