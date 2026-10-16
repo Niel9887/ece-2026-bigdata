@@ -111,6 +111,7 @@ print("Order stats sample:", order_stats.take(3))
 print("Average quantity sample:", average_quantity.take(3))
 
 fake_order = dict(orders_rdd.first())
+fake_order["order_id"] = "test-missing-user"
 fake_order["user_id"] = "missing-user"
 orders_with_missing = orders_rdd.union(sc.parallelize([fake_order]))
 orders_with_missing_kv = orders_with_missing.map(
