@@ -5,6 +5,7 @@ __pycache__/
 *.csv
 !lab_medallion/seeds/*.csv
 *.duckdb
+s3.env
 init.sql
 *.parquet
 target/

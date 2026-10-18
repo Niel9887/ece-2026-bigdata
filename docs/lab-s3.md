@@ -6,7 +6,7 @@ The access keys are sensitive, and Kubernetes keeps sensitive data in a Secret, 
 
 ### The credentials of Onyxia are temporary. What happens if the Job is executed again tomorrow? How would a production platform provide credentials to a Job?
 
-The Job would fail: the session token copied into the Secret has expired, so `aws s3 cp` fails with an `ExpiredToken` error, and Kubernetes retries the pod up to 2 times (`backoffLimit: 2`) before marking the Job as failed. On a production platform the application gets its own credentials from the platform. With Rook, an `ObjectBucketClaim` in the manifests makes the operator create the bucket, a Secret with its credentials and a ConfigMap with the endpoint and bucket name, and the pod receives them as environment variables.
+The Job would fail: the session token copied into the Secret has expired, so `aws s3 cp` fails with an `ExpiredToken` error, and Kubernetes retries the pod up to 2 times (`backoffLimit: 2`) before marking the Job as failed. In production, the Job would use dedicated credentials with access limited to the bucket it needs. The platform could provide them through a Kubernetes Secret instead of copying a temporary Onyxia token.
 
 ### How would you turn this Job into a daily ingestion?
 

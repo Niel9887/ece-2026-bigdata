@@ -173,4 +173,4 @@ Most filters could not skip any row group anymore. Each row group would contain 
 
 ### Compare the execution time of the CSV and Parquet queries. Which part of the difference is due to the network, which part to the parsing of the CSV file?
 
-About 0.8 s of the 0.96 s gap (1.30 s against 0.34 s) comes from the network and about 0.16 s from parsing the CSV. Reading the CSV from S3 instead of the local file adds 1.07 s (1.30 s against 0.23 s), but Parquet also spends about 0.27 s just to open the file, as the filtered query with 1 GET shows, so the network part of the gap is about 1.07 - 0.27 = 0.8 s. The other 0.07 s of the Parquet query, against 0.23 s for the local CSV, gives about 0.16 s for parsing, a slight underestimate because these 0.07 s still include 3 GET requests.
+CSV took 1.30 s and Parquet 0.34 s. The CSV query fetched 28.2 MiB, compared with 203.5 KiB for Parquet, so network transfer likely explains most of the gap. The same CSV query took 0.23 s locally, which shows that parsing and aggregation also take time. These measurements do not isolate the exact cost of parsing.
