@@ -106,4 +106,29 @@ print(
     stg_orders.groupBy("order_id").count().filter(F.col("count") > 1).count(),
 )
 
+orders_with_duplicates.createOrReplaceTempView("orders_with_duplicates")
+stg_orders_sql = spark.sql("""
+    SELECT order_id, user_id, ordered_at, quantity, product
+    FROM (
+        SELECT *, row_number() OVER (
+            PARTITION BY order_id ORDER BY ordered_at DESC
+        ) AS rn
+        FROM orders_with_duplicates
+    )
+    WHERE rn = 1
+""")
+
+assert stg_orders_sql.count() == stg_orders.count()
+assert set(stg_orders_sql.columns) == set(stg_orders.columns)
+print("SQL orders after deduplication:", stg_orders_sql.count())
+
+stg_users.createOrReplaceTempView("stg_users")
+spark.sql("""
+    SELECT state, count(*) AS users,
+           sum(CASE WHEN city IS NULL THEN 1 ELSE 0 END) AS missing_city
+    FROM stg_users
+    GROUP BY state
+    ORDER BY users DESC
+""").show(10)
+
 spark.stop()
