@@ -20,3 +20,4 @@ uv run orders-report -h
 - DuckDB lab: answers in [docs/lab-duckdb.md](docs/lab-duckdb.md), queries in `sql/`
 - dbt lab: answers in [docs/lab-dbt.md](docs/lab-dbt.md), project in `lab_medallion/`
 - PySpark RDD lab: answers in [docs/lab-pyspark-rdd.md](docs/lab-pyspark-rdd.md), script in `spark_rdd/`
+- PySpark silver lab: answers in [docs/lab-pyspark-silver.md](docs/lab-pyspark-silver.md), script in `spark_silver/`
