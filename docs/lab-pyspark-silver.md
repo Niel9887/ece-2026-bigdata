@@ -101,3 +101,13 @@ All three methods found a zip code in the 50 bronze addresses. I ran each full D
 | pandas UDF | 1.205, 0.297, 0.349 |
 
 The first UDF run was slower than later runs. With only 50 rows, these timings mostly show startup overhead, so I would keep the Spark regex for this extraction.
+
+### Cache the bronze files
+
+After the first read, I cached both bronze DataFrames and ran a group by on users and orders. Spark UI's Storage tab showed two cached RDDs, each with one partition 100% cached. The users cache used 9.2 KiB of memory and the orders cache used 144.4 KiB. The later group by jobs could reuse those cached rows instead of reading the CSV files again.
+
+### Append an Iceberg order
+
+I appended one order to `lab.silver.orders`. The current table had 2,830 orders, while `VERSION AS OF` the snapshot before the append returned 2,829. The snapshots table showed an `append` after the earlier `overwrite` snapshots.
+
+I also copied the Parquet orders to a separate exercise directory and appended the same order there. Its count went from 2,829 to 2,830, but the directory has no snapshot ID or `VERSION AS OF` query. To recover the earlier state, I would need to keep a separate copy or track the files myself.

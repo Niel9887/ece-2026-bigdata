@@ -19,4 +19,18 @@ Run the first two exercises after the silver files have been written:
 spark-submit --master 'local[2]' --driver-memory 512m spark_silver/exercises.py
 ```
 
+For the cache exercise, keep the session open while checking the Spark UI Storage tab:
+
+```bash
+spark-submit --master 'local[2]' --driver-memory 512m spark_silver/cache_exercise.py --inspect-ui
+```
+
+For the snapshot exercise, run this once after creating the Iceberg tables:
+
+```bash
+spark-submit --master 'local[2]' --driver-memory 512m \
+  --packages org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0 \
+  spark_silver/iceberg_exercise.py
+```
+
 This service has a 2 GiB memory limit, so the script uses two local threads and a 512 MiB driver. The S3A magic committer failed during the Parquet write; the script uses the file committer for this single-writer lab.
