@@ -6,7 +6,9 @@ Run this on the Onyxia `vscode-pyspark` service from the repository root. The se
 aws s3 --endpoint-url "https://$AWS_S3_ENDPOINT" ls "s3://$KUBERNETES_NAMESPACE/bronze/"
 pyspark --version
 ls "$SPARK_HOME/jars" | grep -i hadoop-aws
-spark-submit --master 'local[*]' spark_silver/lab_silver.py
+spark-submit --master 'local[2]' --driver-memory 512m spark_silver/lab_silver.py
 ```
 
 The script uses an Iceberg package for Spark 4.1 and Scala 2.13. If the service uses other versions, change `iceberg_package` in the script. If `hadoop-aws` is missing, add its matching package to `spark.jars.packages` before running it.
+
+This service has a 2 GiB memory limit, so the script uses two local threads and a 512 MiB driver. The S3A magic committer failed during the Parquet write; the script uses the file committer for this single-writer lab.

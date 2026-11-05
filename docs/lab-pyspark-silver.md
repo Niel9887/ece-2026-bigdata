@@ -31,3 +31,13 @@ I would use SQL for a quick query and the DataFrame API for a transformation kep
 ### Where could an empty string cause another wrong result?
 
 The `state` or `zip_code` extraction could also return an empty string when the address does not match. Grouping by state would then count an empty state as if it were a real value.
+
+## Parquet files
+
+### Which objects were written?
+
+`silver/spark/users.parquet/` contains one `part-...parquet` file and `_SUCCESS`. `silver/spark/orders.parquet/` has the same layout. Spark wrote one data file per output partition here; `_SUCCESS` marks the completed job. Reading them back gave 50 users and 2,829 orders.
+
+### What would `coalesce(1)` cost on a larger dataset?
+
+It would force the output through one partition, so the write could no longer use several workers in parallel.

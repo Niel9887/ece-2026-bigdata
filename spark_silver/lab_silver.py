@@ -11,7 +11,9 @@ iceberg_package = "org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0"
 spark = (
     SparkSession.builder
     .appName("lab-silver-pyspark")
-    .master("local[*]")
+    .master("local[2]")
+    .config("spark.sql.shuffle.partitions", "4")
+    .config("spark.hadoop.fs.s3a.committer.name", "file")
     .config("spark.hadoop.fs.s3a.endpoint", f"https://{os.environ['AWS_S3_ENDPOINT']}")
     .config("spark.hadoop.fs.s3a.access.key", os.environ["AWS_ACCESS_KEY_ID"])
     .config("spark.hadoop.fs.s3a.secret.key", os.environ["AWS_SECRET_ACCESS_KEY"])
@@ -130,5 +132,17 @@ spark.sql("""
     GROUP BY state
     ORDER BY users DESC
 """).show(10)
+
+users_parquet = f"s3a://{bucket}/silver/spark/users.parquet"
+orders_parquet = f"s3a://{bucket}/silver/spark/orders.parquet"
+stg_users.write.mode("overwrite").parquet(users_parquet)
+stg_orders.write.mode("overwrite").parquet(orders_parquet)
+
+users_silver = spark.read.parquet(users_parquet)
+orders_silver = spark.read.parquet(orders_parquet)
+assert users_silver.count() == users_bronze.count()
+assert orders_silver.count() == stg_orders.count()
+print("Parquet users:", users_silver.count())
+print("Parquet orders:", orders_silver.count())
 
 spark.stop()
