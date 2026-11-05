@@ -55,3 +55,31 @@ A reader of a Parquet directory may see files being removed and replaced while t
 ### What if two jobs commit at the same time?
 
 With this Hadoop catalog, both jobs can try to update the current table version in S3 and one change can be lost. A catalog service coordinates that update.
+
+## Comparing dbt and Spark
+
+DuckDB counted 2,829 orders and a quantity total of 8,615 in both outputs. It counted 50 users in each output. In my bucket the dbt files are `silver/dbt/orders.parquet` and `silver/dbt/users.parquet`.
+
+### What differs between the schemas?
+
+DuckDB reads the dbt IDs as `UUID` and `ordered_at` as `TIMESTAMP WITH TIME ZONE`. In the Spark output they are strings and a plain `TIMESTAMP`. I kept the IDs as strings because Spark has no UUID column type. The dbt users model also adds `username_normalized` and `birthdate_is_valid`, and sets invalid birthdates to null. The current Spark output does not yet do that. A consumer expecting the dbt schema cannot use it unchanged.
+
+### How do the file layouts compare?
+
+dbt wrote one Parquet object per model. Spark wrote a directory with a part file and `_SUCCESS` for each model. The single object is simple to open. Spark's layout can use several output partitions on a larger dataset.
+
+### How are the data checked?
+
+This script uses count and duplicate checks, then reads the written files and tables back. The dbt model also tests null IDs, unique usernames and emails, allowed `sex`, `product`, and `quantity` values, valid states, and whether every order's `user_id` exists in users. Those checks would need to be added in Spark.
+
+### What replaces `ref()` and `source()` here?
+
+The script runs the steps in order and passes DataFrames from one step to the next. There is no dbt dependency graph in this script.
+
+### Can the run times be compared directly?
+
+The dbt build included its models and tests. The Spark run included JVM startup and both Parquet and Iceberg writes. I did not measure the Spark transformations separately, so I cannot compare their run times fairly.
+
+### Which tool would I choose?
+
+For a 10 GB daily batch or a SQL-only analyst team, I would use dbt with DuckDB. For 10 TB daily, I would use Spark because the work can be split across machines.
