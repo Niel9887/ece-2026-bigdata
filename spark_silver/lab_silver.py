@@ -124,6 +124,24 @@ assert stg_orders_sql.count() == stg_orders.count()
 assert set(stg_orders_sql.columns) == set(stg_orders.columns)
 print("SQL orders after deduplication:", stg_orders_sql.count())
 
+first_orders = stg_orders.groupBy("user_id").agg(
+    F.min("ordered_at").alias("first_order")
+)
+stg_users = (
+    stg_users.join(first_orders, "user_id", "left")
+    .withColumn(
+        "birthdate_is_valid",
+        F.col("first_order").isNull()
+        | (F.col("birthdate") <= F.to_date("first_order")),
+    )
+    .withColumn(
+        "birthdate",
+        F.when(F.col("birthdate_is_valid"), F.col("birthdate")),
+    )
+    .drop("first_order")
+)
+print("Invalid birthdates:", stg_users.filter(~F.col("birthdate_is_valid")).count())
+
 stg_users.createOrReplaceTempView("stg_users")
 spark.sql("""
     SELECT state, count(*) AS users,

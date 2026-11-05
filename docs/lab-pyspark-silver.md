@@ -62,7 +62,7 @@ DuckDB counted 2,829 orders and a quantity total of 8,615 in both outputs. It co
 
 ### What differs between the schemas?
 
-DuckDB reads the dbt IDs as `UUID` and `ordered_at` as `TIMESTAMP WITH TIME ZONE`. In the Spark output they are strings and a plain `TIMESTAMP`. I kept the IDs as strings because Spark has no UUID column type. The dbt users model also adds `username_normalized` and `birthdate_is_valid`, and sets invalid birthdates to null. The current Spark output does not yet do that. A consumer expecting the dbt schema cannot use it unchanged.
+DuckDB reads the dbt IDs as `UUID` and `ordered_at` as `TIMESTAMP WITH TIME ZONE`. In the Spark output they are strings and a plain `TIMESTAMP`. I kept the IDs as strings because Spark has no UUID column type. The dbt users model also adds `username_normalized`; the Spark output does not. Both models now mark invalid birthdates and set them to null.
 
 ### How do the file layouts compare?
 
@@ -83,3 +83,21 @@ The dbt build included its models and tests. The Spark run included JVM startup 
 ### Which tool would I choose?
 
 For a 10 GB daily batch or a SQL-only analyst team, I would use dbt with DuckDB. For 10 TB daily, I would use Spark because the work can be split across machines.
+
+## Exercises
+
+### Birthdate check
+
+The DataFrame and SQL versions gave the same validity flag for every user. Five birthdates were later than the first order, matching the dbt lab. The Spark silver output now marks these five rows as invalid and sets their birthdates to null, as the dbt model does.
+
+### Zip code extraction
+
+All three methods found a zip code in the 50 bronze addresses. I ran each full DataFrame action three times:
+
+| Method | Seconds |
+| --- | --- |
+| Spark regex | 0.543, 0.567, 0.390 |
+| Python UDF | 2.087, 0.305, 0.326 |
+| pandas UDF | 1.205, 0.297, 0.349 |
+
+The first UDF run was slower than later runs. With only 50 rows, these timings mostly show startup overhead, so I would keep the Spark regex for this extraction.

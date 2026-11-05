@@ -13,4 +13,10 @@ spark-submit --master 'local[2]' --driver-memory 512m \
 
 The script uses an Iceberg package for Spark 4.1 and Scala 2.13. If the service uses other versions, change `iceberg_package` in the script and the `--packages` value in the command. If `hadoop-aws` is missing, add its matching package before running the script.
 
+Run the first two exercises after the silver files have been written:
+
+```bash
+spark-submit --master 'local[2]' --driver-memory 512m spark_silver/exercises.py
+```
+
 This service has a 2 GiB memory limit, so the script uses two local threads and a 512 MiB driver. The S3A magic committer failed during the Parquet write; the script uses the file committer for this single-writer lab.
