@@ -33,4 +33,4 @@ spark-submit --master 'local[2]' --driver-memory 512m \
   spark_silver/iceberg_exercise.py
 ```
 
-This service has a 2 GiB memory limit, so the script uses two local threads and a 512 MiB driver. The S3A magic committer failed during the Parquet write; the script uses the file committer for this single-writer lab.
+The lab recommends 4000 Mi of memory. My Onyxia service had a 2 GiB limit, so these commands use two local threads and a 512 MiB driver. The S3A magic committer failed during the Parquet write; the script uses the file committer for this single-writer lab.

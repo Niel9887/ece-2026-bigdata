@@ -4,7 +4,7 @@
 
 ### What happens if the service is restarted during a Spark job?
 
-The job stops because the driver and executors run inside the Onyxia service. A new service starts a new Spark session with new temporary credentials.
+The job stops because the driver and executors run inside the Onyxia service. After a restart, I need a new Spark session and valid temporary S3 credentials before reading the files again.
 
 ### Why does `SimpleAWSCredentialsProvider` fail here?
 
@@ -26,7 +26,7 @@ It counts users and missing cities for each state. In the ten states shown, all 
 
 ### Which approach would you use?
 
-I would use SQL for a quick query and the DataFrame API for a transformation kept in the Python script. Both use the same Spark engine.
+For a one-off check in PySpark, I would use the DataFrame API to inspect each step. For a model shared with colleagues who know SQL, I would use Spark SQL so they can read and change the query directly.
 
 ### Where could an empty string cause another wrong result?
 
@@ -62,7 +62,7 @@ DuckDB counted 2,829 orders and a quantity total of 8,615 in both outputs. It co
 
 ### What differs between the schemas?
 
-DuckDB reads the dbt IDs as `UUID` and `ordered_at` as `TIMESTAMP WITH TIME ZONE`. In the Spark output they are strings and a plain `TIMESTAMP`. I kept the IDs as strings because Spark has no UUID column type. The dbt users model also adds `username_normalized`; the Spark output does not. Both models now mark invalid birthdates and set them to null.
+DuckDB reads the dbt IDs as `UUID` and `ordered_at` as `TIMESTAMP WITH TIME ZONE`. In the Spark output they are strings and a plain `TIMESTAMP`. I kept the IDs as strings because Spark has no UUID column type. A reader expecting the dbt schema must cast the IDs, handle the timestamp without a stored time zone, and compute the missing `username_normalized` column. Both models mark invalid birthdates and set them to null.
 
 ### How do the file layouts compare?
 
@@ -92,7 +92,7 @@ The DataFrame and SQL versions gave the same validity flag for every user. Five 
 
 ### Zip code extraction
 
-All three methods found a zip code in the 50 bronze addresses. I ran each full DataFrame action three times:
+All three methods found a zip code in the 50 bronze addresses. `%%timeit` is a notebook command, so I timed each full DataFrame action three times with `perf_counter` in the script:
 
 | Method | Seconds |
 | --- | --- |
