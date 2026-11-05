@@ -41,3 +41,17 @@ The `state` or `zip_code` extraction could also return an empty string when the 
 ### What would `coalesce(1)` cost on a larger dataset?
 
 It would force the output through one partition, so the write could no longer use several workers in parallel.
+
+## Iceberg tables
+
+### Which files contain data and metadata?
+
+Both outputs store their rows in Parquet files. Iceberg also has a `metadata/` directory with JSON and Avro files for the schema, manifests and snapshot. The `orders` snapshot reports one Parquet data file with 2,829 records; reading the tables returned 50 users and 2,829 orders.
+
+### What happens during an overwrite?
+
+A reader of a Parquet directory may see files being removed and replaced while the write runs. An Iceberg reader stays on a committed snapshot and sees the new version after the commit.
+
+### What if two jobs commit at the same time?
+
+With this Hadoop catalog, both jobs can try to update the current table version in S3 and one change can be lost. A catalog service coordinates that update.
