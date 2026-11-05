@@ -1,6 +1,5 @@
 import os
 import re
-import time
 
 import pandas as pd
 from pyspark.sql import SparkSession, functions as F
@@ -95,13 +94,11 @@ versions = {
     "python_udf": zip_python("address"),
     "pandas_udf": zip_pandas("address"),
 }
+expected_users = users_bronze.count()
 for name, expression in versions.items():
-    times = []
-    for _ in range(3):
-        started = time.perf_counter()
-        result = users_bronze.select(expression.alias("zip_code"))
-        count = result.filter(F.col("zip_code") != "").count()
-        times.append(round(time.perf_counter() - started, 3))
-    print(name, "matched:", count, "seconds:", times)
+    result = users_bronze.select(expression.alias("zip_code"))
+    count = result.filter(F.col("zip_code") != "").count()
+    print(name, "matched:", count)
+    assert count == expected_users
 
 spark.stop()

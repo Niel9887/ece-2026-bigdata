@@ -19,6 +19,8 @@ Run the first two exercises after the silver files have been written:
 spark-submit --master 'local[2]' --driver-memory 512m spark_silver/exercises.py
 ```
 
+Open `spark_silver/zip_timeit.ipynb` on Onyxia to time the three zip code expressions with `%%timeit`. It uses the full bronze users DataFrame and runs each action three times.
+
 For the cache exercise, keep the session open while checking the Spark UI Storage tab:
 
 ```bash
