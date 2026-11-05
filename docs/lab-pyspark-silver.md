@@ -78,7 +78,7 @@ The script runs the steps in order and passes DataFrames from one step to the ne
 
 ### Can the run times be compared directly?
 
-The dbt build included its models and tests. The Spark run included JVM startup and both Parquet and Iceberg writes. I did not measure the Spark transformations separately, so I cannot compare their run times fairly.
+On the same Onyxia service, `uv run dbt build` took 13.45 s and the full `spark-submit` command took 67.92 s. These are complete command times. dbt ran its models and tests, while Spark started the JVM and wrote both Parquet files and Iceberg tables. The numbers do not isolate the silver transformations, so they are not a direct speed comparison.
 
 ### Which tool would I choose?
 
@@ -92,15 +92,15 @@ The DataFrame and SQL versions gave the same validity flag for every user. Five 
 
 ### Zip code extraction
 
-All three methods found a zip code in the 50 bronze addresses. `%%timeit` is a notebook command, so I timed each full DataFrame action three times with `perf_counter` in the script:
+All three methods found a zip code in the 50 bronze addresses. I used `%%timeit -n 1 -r 3` in `spark_silver/zip_timeit.ipynb` on the full DataFrame. Each cell counted the non-empty zip codes to make Spark run the expression:
 
-| Method | Seconds |
+| Method | Mean ± standard deviation |
 | --- | --- |
-| Spark regex | 0.543, 0.567, 0.390 |
-| Python UDF | 2.087, 0.305, 0.326 |
-| pandas UDF | 1.205, 0.297, 0.349 |
+| Spark regex | 1.60 ± 1.33 s |
+| Python UDF | 1.33 ± 0.92 s |
+| pandas UDF | 0.886 ± 0.502 s |
 
-The first UDF run was slower than later runs. With only 50 rows, these timings mostly show startup overhead, so I would keep the Spark regex for this extraction.
+The runs varied a lot for only 50 rows, so I cannot use these numbers to rank the methods. I would keep the Spark regex because this extraction does not need Python code.
 
 ### Cache the bronze files
 
