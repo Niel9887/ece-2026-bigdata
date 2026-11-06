@@ -75,3 +75,33 @@ The table schema applies to both old and new data files. Changing only one Parqu
 ### Query before and after the append
 
 The snapshot immediately before this append has 50 users. The current table has 53.
+
+### Add a country column
+
+I added `country` to `lab.silver.users` and wrote one row with `country = 'US'`. The table went from 53 to 54 rows. Its old data files are still current.
+
+### Compare the users and orders layouts
+
+Both Iceberg tables have `data/` and `metadata/` under `warehouse/silver/`. On S3, `orders` has seven objects in `data/` and 23 in `metadata/`. `users` has five in `data/` and 17 in `metadata/` after the exercises.
+
+### Parquet, Iceberg, and the catalog
+
+Parquet stores the rows in files. Iceberg adds table metadata, snapshots, and the list of files in each table version. The `lab` catalog gives Spark a name and warehouse location for those Iceberg tables.
+
+## Compare Iceberg with Parquet
+
+### Which path is only a Parquet directory?
+
+`silver/spark/orders.parquet/` is a Parquet output directory. It has no Iceberg `metadata/` directory. `warehouse/silver/orders/` is an Iceberg table with data files and metadata.
+
+### How could a Parquet directory be replaced safely during a read?
+
+Write the replacement to a separate directory, then coordinate when readers switch to it. Overwriting the files in place could leave a reader with a mix of old and new files.
+
+### How does Iceberg publish a new table state?
+
+Iceberg writes the data and metadata first, then makes the new snapshot current with a metadata update. A reader sees one committed table version.
+
+### Why use a catalog across several engines?
+
+The catalog gives each engine the same table name and current metadata location. After a commit, the engines can find the new table version there.

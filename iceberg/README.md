@@ -42,3 +42,13 @@ spark-submit --master 'local[2]' --driver-memory 512m \
 ```
 
 Each run adds another three users.
+
+To add `country` and one user with the new schema, run once:
+
+```bash
+spark-submit --master 'local[2]' --driver-memory 512m \
+  --packages org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0 \
+  iceberg/evolve_users.py
+```
+
+This script expects the `country` column to be absent before the run.
