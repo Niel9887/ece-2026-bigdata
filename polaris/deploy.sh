@@ -49,7 +49,15 @@ kubectl create secret generic polaris-s3 \
   --dry-run=client -o yaml | kubectl apply -f -
 
 helm dependency update "$chart"
-helm upgrade --install polaris "$chart" --wait --timeout 10m
+helm_args=(upgrade --install polaris "$chart" --wait --timeout 10m)
+if [ -n "${POLARIS_DB_PVC:-}" ]; then
+  helm_args+=(
+    --set "postgresql.primary.persistence.existingClaim=$POLARIS_DB_PVC"
+    --set postgresql.primary.persistence.subPath=polaris-postgresql
+    --set postgresql.volumePermissions.enabled=true
+  )
+fi
+helm "${helm_args[@]}"
 
 job_log="$(kubectl logs job/polaris-bootstrap)"
 credentials="$(printf '%s\n' "$job_log" \

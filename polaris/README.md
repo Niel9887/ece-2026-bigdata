@@ -10,6 +10,14 @@ aws s3 ls "s3://$KUBERNETES_NAMESPACE/bronze/" \
 bash polaris/deploy.sh
 ```
 
+If the namespace storage quota is full, PostgreSQL can use an existing PVC from a stopped service. Its files go into the `polaris-postgresql` subdirectory, away from that service's files:
+
+```bash
+POLARIS_DB_PVC=vscode-pyspark-180390 bash polaris/deploy.sh
+```
+
+Keep that service stopped while PostgreSQL uses its volume.
+
 The script creates Kubernetes secrets for the root password and temporary S3 keys. It keeps the existing root password on later runs and restarts Polaris so it reads updated S3 keys. These values do not belong in Git.
 
 The bootstrap Job returns the `dev` and `analyst` credentials only when it creates those principals. The script saves them in `/home/onyxia/.polaris-credentials.env` with restricted permissions. Copy that file to a safe place outside this temporary service before running the next lab.
