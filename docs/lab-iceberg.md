@@ -65,3 +65,13 @@ It is recorded in the Iceberg table metadata. The `source` column appears when S
 ### Why is schema evolution a table-level operation?
 
 The table schema applies to both old and new data files. Changing only one Parquet file would not update the schema used to read the whole table.
+
+## Users exercises
+
+### Create the table and append a batch
+
+`lab.silver.users` was created in the Spark silver lab with 50 rows. I copied three rows and gave them new `user_id` values for the append exercise. Their other fields are reused. The table now has 53 rows and its snapshot count went from three to four.
+
+### Query before and after the append
+
+The snapshot immediately before this append has 50 users. The current table has 53.

@@ -32,3 +32,13 @@ spark-submit --master 'local[2]' --driver-memory 512m \
 ```
 
 The script checks that the old data files remain in the table. It expects `source` to be absent at the start, so do not rerun it after it succeeds.
+
+The users table already exists from the Spark silver lab. Add three users and check the previous snapshot once:
+
+```bash
+spark-submit --master 'local[2]' --driver-memory 512m \
+  --packages org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0 \
+  iceberg/append_users.py
+```
+
+Each run adds another three users.
