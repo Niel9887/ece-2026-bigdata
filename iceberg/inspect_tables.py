@@ -46,4 +46,14 @@ for table in ("orders", "users"):
         FROM {name}.files
     """).show(truncate=False)
 
+first_snapshot = spark.sql("""
+    SELECT snapshot_id FROM lab.silver.orders.snapshots
+    ORDER BY committed_at LIMIT 1
+""").first()[0]
+first_rows = spark.sql(f"""
+    SELECT count(*) FROM lab.silver.orders VERSION AS OF {first_snapshot}
+""").first()[0]
+print("Orders in first snapshot:", first_rows)
+print("Orders now:", spark.table("lab.silver.orders").count())
+
 spark.stop()

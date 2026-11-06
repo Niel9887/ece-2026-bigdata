@@ -11,7 +11,7 @@ spark-submit --master 'local[2]' --driver-memory 512m \
   iceberg/inspect_tables.py
 ```
 
-The script prints the current row counts, snapshots, and data files for `orders` and `users`. Snapshot counts can be higher than the initial metadata committed during the previous lab because that lab also ran an append exercise.
+The script prints the current row counts, snapshots, and data files for `orders` and `users`. It also compares the first orders snapshot with the current table. Snapshot counts can be higher than the initial metadata committed during the previous lab because that lab also ran an append exercise.
 
 After recording those results, run the append exercise once:
 

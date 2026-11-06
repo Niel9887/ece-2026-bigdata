@@ -37,3 +37,17 @@ No. Both files that belonged to the table before the append are still current. T
 ### Why does Iceberg create a new snapshot?
 
 The new snapshot records the added file while keeping the previous table version available for a query.
+
+## Time travel
+
+### What does time travel read?
+
+`VERSION AS OF` reads the rows visible at the selected snapshot. The first snapshot has 2,829 orders and the current table has 2,833.
+
+### Why is a complete copy unnecessary?
+
+The first snapshot still points to its original Parquet file. Later appends add files and metadata without copying those original rows.
+
+### What if the old metadata and files were deleted?
+
+The query for that snapshot would fail because Iceberg would no longer have the files needed to reconstruct it.
