@@ -23,3 +23,17 @@ Spark found five snapshots and two current data files for `orders`. It found thr
 ### What does `snapshots` show that the Parquet files do not?
 
 It gives a snapshot ID, operation, and commit time for each table version. A Parquet data file contains rows but does not record this table history.
+
+## Create a second snapshot
+
+### How many snapshots are there now?
+
+There are six snapshots for `orders` after appending three rows. The table now has 2,833 orders.
+
+### Did the original Parquet files disappear?
+
+No. Both files that belonged to the table before the append are still current. The append added a third data file.
+
+### Why does Iceberg create a new snapshot?
+
+The new snapshot records the added file while keeping the previous table version available for a query.

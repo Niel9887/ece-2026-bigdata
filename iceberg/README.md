@@ -12,3 +12,13 @@ spark-submit --master 'local[2]' --driver-memory 512m \
 ```
 
 The script prints the current row counts, snapshots, and data files for `orders` and `users`. Snapshot counts can be higher than the initial metadata committed during the previous lab because that lab also ran an append exercise.
+
+After recording those results, run the append exercise once:
+
+```bash
+spark-submit --master 'local[2]' --driver-memory 512m \
+  --packages org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0 \
+  iceberg/append_orders.py
+```
+
+The script adds three orders with new IDs, checks the row count before and after, and reads the preceding snapshot with `VERSION AS OF`. Running it again would add three more orders.
