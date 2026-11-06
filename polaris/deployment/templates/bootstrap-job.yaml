@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: polaris-bootstrap
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "10"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: bootstrap
+          image: alpine:3.21
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 56Mi
+          envFrom:
+            - configMapRef:
+                name: polaris-config
+          env:
+            - name: POLARIS_ROOT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: polaris-credential
+                  key: POLARIS_ROOT_SECRET
+            - name: AWS_REGION
+              value: us-east-1
+          command: ["/bin/sh", "/scripts/bootstrap.sh"]
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+      volumes:
+        - name: script
+          configMap:
+            name: polaris-bootstrap-script
