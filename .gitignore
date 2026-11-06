@@ -11,3 +11,4 @@ init.sql
 target/
 dbt_packages/
 logs/
+polaris/deployment/charts/
