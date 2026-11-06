@@ -22,3 +22,13 @@ spark-submit --master 'local[2]' --driver-memory 512m \
 ```
 
 The script adds three orders with new IDs, checks the row count before and after, and reads the preceding snapshot with `VERSION AS OF`. Running it again would add three more orders.
+
+To add the `source` column and one order with the new schema, run once:
+
+```bash
+spark-submit --master 'local[2]' --driver-memory 512m \
+  --packages org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0 \
+  iceberg/evolve_orders.py
+```
+
+The script checks that the old data files remain in the table. It expects `source` to be absent at the start, so do not rerun it after it succeeds.

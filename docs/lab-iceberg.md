@@ -51,3 +51,17 @@ The first snapshot still points to its original Parquet file. Later appends add 
 ### What if the old metadata and files were deleted?
 
 The query for that snapshot would fail because Iceberg would no longer have the files needed to reconstruct it.
+
+## Schema evolution
+
+### Did the existing Parquet files have to be rewritten?
+
+No. The files that were current before adding `source` are still part of the table. The new row increased the count from 2,833 to 2,834.
+
+### Where is the new schema recorded?
+
+It is recorded in the Iceberg table metadata. The `source` column appears when Spark reads the table.
+
+### Why is schema evolution a table-level operation?
+
+The table schema applies to both old and new data files. Changing only one Parquet file would not update the schema used to read the whole table.
