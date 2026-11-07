@@ -15,3 +15,7 @@ I will write new versions of this table through Polaris. A write through `lab` w
 I read 54 users from `lab.silver.users` and created `polaris.silver.users` from that DataFrame. Polaris also returned 54 users. The new table files are under `s3://user-n-raluy-ece/warehouse/silver/users/`, the location of the `silver` namespace.
 
 For `orders`, registration reused the existing metadata and data files. Creating `users` wrote a new table version and a Parquet data file through Polaris. The older Hadoop table still has its own catalog pointer.
+
+## Check the `country` column
+
+`lab.silver.users` already had `country` from the Iceberg lab, so the new Polaris table inherited it. The add-column script found the column and did not run `ALTER TABLE`. No metadata JSON was added and the table stayed at one snapshot. The initial Polaris metadata file, `00000-ad5ecde7-add2-4c5f-8f40-7631e2b48395.metadata.json`, already records `country`.
