@@ -9,3 +9,9 @@
 The current Hadoop metadata file was `v8.metadata.json`. I registered it as `polaris.silver.orders`. Both catalogs returned 2,834 orders. The S3 directory had 30 objects before and after the registration, so Polaris added a table reference without copying the data files.
 
 I will write new versions of this table through Polaris. A write through `lab` would update the Hadoop catalog's metadata pointer while Polaris could still point to the previous version.
+
+## Create `silver.users` as dev
+
+I read 54 users from `lab.silver.users` and created `polaris.silver.users` from that DataFrame. Polaris also returned 54 users. The new table files are under `s3://user-n-raluy-ece/warehouse/silver/users/`, the location of the `silver` namespace.
+
+For `orders`, registration reused the existing metadata and data files. Creating `users` wrote a new table version and a Parquet data file through Polaris. The older Hadoop table still has its own catalog pointer.
