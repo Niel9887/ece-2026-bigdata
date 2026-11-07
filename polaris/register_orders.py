@@ -38,8 +38,8 @@ if "orders" not in tables:
         )
     """).show()
 
-lab_count = spark.sql("SELECT count(*) AS count FROM lab.silver.orders").first().count
-polaris_count = spark.sql("SELECT count(*) AS count FROM polaris.silver.orders").first().count
+lab_count = spark.sql("SELECT count(*) AS count FROM lab.silver.orders").first()["count"]
+polaris_count = spark.sql("SELECT count(*) AS count FROM polaris.silver.orders").first()["count"]
 after = object_count()
 print("Orders in lab:", lab_count)
 print("Orders in Polaris:", polaris_count)
