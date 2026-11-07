@@ -25,3 +25,7 @@ For `orders`, registration reused the existing metadata and data files. Creating
 The `analyst` session listed the `silver` tables and ran the order count by product. Polaris refused `INSERT` because this principal is not authorized for `ADD_TABLE_SNAPSHOT`. It refused `ALTER TABLE ... ADD COLUMN phone` because it is not authorized for `ADD_TABLE_SCHEMA`. The `catalog_reader` role grants `TABLE_READ_DATA`, `TABLE_READ_PROPERTIES`, and `CATALOG_READ_PROPERTIES`.
 
 I checked `orders` again as `dev` after the failed insert. It still had 2,834 rows and the same seven snapshots, so the denied write did not commit a new table version.
+
+## Exercise: remove `country`
+
+I dropped `country` from `polaris.silver.users`. Polaris wrote `00001-ab0c1893-d7ee-41e5-b219-e86995b786ce.metadata.json`. The table still had one snapshot before and after. Dropping a column changes the schema in metadata; it does not rewrite the Parquet rows.
