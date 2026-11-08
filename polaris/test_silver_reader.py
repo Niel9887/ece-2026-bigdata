@@ -26,7 +26,8 @@ elif action == "check":
     try:
         spark.sql("SELECT count(*) FROM polaris.gold.test_orders").show()
     except Exception as exc:
-        print("Gold denied:", str(exc).splitlines()[0])
+        details = [line.strip() for line in str(exc).splitlines() if line.strip()]
+        print("Gold denied:", " | ".join(details[:4]))
     else:
         raise SystemExit("Gold was unexpectedly readable")
 
