@@ -18,7 +18,9 @@ For `orders`, registration reused the existing metadata and data files. Creating
 
 ## Check the `country` column
 
-`lab.silver.users` already had `country` from the Iceberg lab, so the new Polaris table inherited it. The add-column script found the column and did not run `ALTER TABLE`. No metadata JSON was added and the table stayed at one snapshot. The initial Polaris metadata file, `00000-ad5ecde7-add2-4c5f-8f40-7631e2b48395.metadata.json`, already records `country`.
+`lab.silver.users` already had `country` from the Iceberg lab, so the new Polaris table inherited it. The add-column script found the column and did not run `ALTER TABLE`. No metadata JSON was added and the table stayed at one snapshot. The initial Polaris metadata file, `00000-ad5ecde7-add2-4c5f-8f40-7631e2b48395.metadata.json`, already records `country`. It is a different file from `v8.metadata.json`, which registered `orders`.
+
+The analyst's later `ALTER TABLE` attempt was denied for missing `ADD_TABLE_SCHEMA`. This is the privilege Polaris checks for a column change. I did not run the requested add as `dev` because `country` was already present.
 
 ## Read as analyst
 
@@ -26,14 +28,20 @@ The `analyst` session listed the `silver` tables and ran the order count by prod
 
 I checked `orders` again as `dev` after the failed insert. It still had 2,834 rows and the same seven snapshots, so the denied write did not commit a new table version.
 
+Polaris checks catalog requests, but Spark also has S3 credentials. Someone with direct access to those S3 credentials can read the files in the bucket without asking Polaris.
+
 ## Exercise: remove `country`
 
 I dropped `country` from `polaris.silver.users`. Polaris wrote `00001-ab0c1893-d7ee-41e5-b219-e86995b786ce.metadata.json`. The table still had one snapshot before and after. Dropping a column changes the schema in metadata; it does not rewrite the Parquet rows.
 
 ## Exercise: read only `silver`
 
-I created `silver_tester`, assigned it `silver_test_role`, and granted that role the `silver_reader` catalog role. The catalog grant covers its properties. The listing and table read grants apply only to the `silver` namespace.
+I created `silver_tester`, assigned it `silver_test_role`, and granted that role the `silver_reader` catalog role. The catalog-level grant allows reading catalog properties. The listing and table read grants apply only to the `silver` namespace.
 
-As `silver_tester`, I could count 2,834 rows in `polaris.silver.orders`. I created `polaris.gold.test_orders` as `dev` with one row for the other check. Reading it as `silver_tester` returned `Forbidden`: the principal was not authorized for `LOAD_TABLE` in `gold`.
+As `silver_tester`, I could count 2,834 rows in `polaris.silver.orders`. I created `polaris.gold.test_orders` as `dev` with one row. Reading it as `silver_tester` returned `Forbidden`: the principal was not authorized for `LOAD_TABLE` in `gold`.
 
 I then dropped the test table and the empty `gold` namespace as `dev`.
+
+## Cleanup
+
+I dropped `polaris.silver.users` as `dev`. `polaris.silver.orders` remained with 2,834 rows for the Trino lab. The separate Hadoop catalog still read 54 rows from `lab.silver.users` after the drop.

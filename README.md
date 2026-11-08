@@ -21,3 +21,6 @@ uv run orders-report -h
 - dbt lab: answers in [docs/lab-dbt.md](docs/lab-dbt.md), project in `lab_medallion/`
 - PySpark RDD lab: answers in [docs/lab-pyspark-rdd.md](docs/lab-pyspark-rdd.md), script in `spark_rdd/`
 - PySpark silver lab: answers in [docs/lab-pyspark-silver.md](docs/lab-pyspark-silver.md), script in `spark_silver/`
+- Iceberg lab: answers in [docs/lab-iceberg.md](docs/lab-iceberg.md), scripts in `iceberg/`
+- Polaris deployment: answers in [docs/lab-polaris-deployment.md](docs/lab-polaris-deployment.md), chart and scripts in `polaris/`
+- Polaris catalog and access: answers in [docs/lab-polaris-catalog.md](docs/lab-polaris-catalog.md), scripts in `polaris/`
