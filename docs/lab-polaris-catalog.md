@@ -29,3 +29,11 @@ I checked `orders` again as `dev` after the failed insert. It still had 2,834 ro
 ## Exercise: remove `country`
 
 I dropped `country` from `polaris.silver.users`. Polaris wrote `00001-ab0c1893-d7ee-41e5-b219-e86995b786ce.metadata.json`. The table still had one snapshot before and after. Dropping a column changes the schema in metadata; it does not rewrite the Parquet rows.
+
+## Exercise: read only `silver`
+
+I created `silver_tester`, assigned it `silver_test_role`, and granted that role the `silver_reader` catalog role. The catalog grant covers its properties. The listing and table read grants apply only to the `silver` namespace.
+
+As `silver_tester`, I could count 2,834 rows in `polaris.silver.orders`. I created `polaris.gold.test_orders` as `dev` with one row for the other check. Reading it as `silver_tester` returned `Forbidden`: the principal was not authorized for `LOAD_TABLE` in `gold`.
+
+I then dropped the test table and the empty `gold` namespace as `dev`.
