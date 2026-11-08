@@ -32,7 +32,7 @@ Polaris checks catalog requests, but Spark also has S3 credentials. Someone with
 
 ## Exercise: remove `country`
 
-I dropped `country` from `polaris.silver.users`. Polaris wrote `00001-ab0c1893-d7ee-41e5-b219-e86995b786ce.metadata.json`. The table still had one snapshot before and after. Dropping a column changes the schema in metadata; it does not rewrite the Parquet rows.
+I dropped `country` after the add-column check. Polaris wrote `00002-fc2eb94b-9d5d-454a-b33a-4386e6ce4c21.metadata.json`. The table still had one snapshot before and after. Dropping a column changes the schema in metadata; it does not rewrite the Parquet rows.
 
 ## Exercise: read only `silver`
 
