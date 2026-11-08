@@ -11,8 +11,8 @@ spark.sql("DESCRIBE NAMESPACE EXTENDED polaris.silver").show(truncate=False)
 source_count = spark.sql("SELECT count(*) AS total FROM lab.silver.users").first()["total"]
 tables = {row.tableName for row in spark.sql("SHOW TABLES IN polaris.silver").collect()}
 if "users" not in tables:
-    # Keep the source table in lab; Polaris writes its own table metadata.
-    spark.table("lab.silver.users").writeTo("polaris.silver.users").createOrReplace()
+    # The Iceberg lab already added country; this lab adds it through Polaris.
+    spark.table("lab.silver.users").drop("country").writeTo("polaris.silver.users").createOrReplace()
 
 target_count = spark.sql("SELECT count(*) AS total FROM polaris.silver.users").first()["total"]
 print("Users in lab:", source_count)
