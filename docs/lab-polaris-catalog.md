@@ -18,9 +18,9 @@ For `orders`, registration reused the existing metadata and data files. Creating
 
 ## Check the `country` column
 
-`lab.silver.users` already had `country` from the Iceberg lab, so the new Polaris table inherited it. The add-column script found the column and did not run `ALTER TABLE`. No metadata JSON was added and the table stayed at one snapshot. The initial Polaris metadata file, `00000-ad5ecde7-add2-4c5f-8f40-7631e2b48395.metadata.json`, already records `country`. It is a different file from `v8.metadata.json`, which registered `orders`.
+`lab.silver.users` already had `country` from the Iceberg lab, so my first Polaris table inherited it. I dropped `country` from the source DataFrame when I recreated `polaris.silver.users`. Then I ran `ALTER TABLE ... ADD COLUMN country STRING` as `dev`. Polaris wrote `00001-adad0675-85cb-4e09-bc9a-950117576f9c.metadata.json`. The snapshot count stayed at one. This is different from `v8.metadata.json`, the file used to register `orders`.
 
-The analyst's later `ALTER TABLE` attempt was denied for missing `ADD_TABLE_SCHEMA`. This is the privilege Polaris checks for a column change. I did not run the requested add as `dev` because `country` was already present.
+The analyst's later `ALTER TABLE` attempt was denied for missing `ADD_TABLE_SCHEMA`. This is the privilege Polaris checks for a column change.
 
 ## Read as analyst
 
